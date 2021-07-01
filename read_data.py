@@ -7,7 +7,7 @@ att_heads = 3
 
 
 def lzq_load_data(len_test,len_close,len_period,len_trend,T_closeness=1,T_period=108,T_trend=108*7):
-    map_count = loadmat("/Users/cathy/Desktop/icde/shenzhen_data/flow_ts_100.mat")
+    map_count = loadmat("./flow_ts.mat")
     map_a = map_count["in_ts"]  #原本的66列（香蜜湖站）没有进站只有出站
     map_b = map_count["out_ts"]
     len_total = 108 * 30
@@ -15,13 +15,10 @@ def lzq_load_data(len_test,len_close,len_period,len_trend,T_closeness=1,T_period
     map_b = np.array(map_b)[0:len_total,:]
 
     # normalization
-    robust_a = preprocessing.MinMaxScaler()
-    map_a = robust_a.fit_transform(map_a)
-    robust_b = preprocessing.MinMaxScaler()
-    map_b = robust_b.fit_transform(map_b)
-
-    #a = np.array([0]*len_total)
-    #map_a = np.insert(map_a, 65, values=a, axis=1)
+    norm_a = preprocessing.MinMaxScaler()
+    map_a = norm_a.fit_transform(map_a)
+    norm_b = preprocessing.MinMaxScaler()
+    map_b = norm_b.fit_transform(map_b)
     node = map_a.shape[1]
 
     number_of_skip_hours = T_trend * len_trend
@@ -33,12 +30,12 @@ def lzq_load_data(len_test,len_close,len_period,len_trend,T_closeness=1,T_period
     map_a = map_a.reshape((len_total, node,1))
     map_b = map_b.reshape((len_total, node,1))
 
-    map_count = loadmat("/Users/cathy/Desktop/icde/shenzhen_data/get_transition_100.mat")
+    map_count = loadmat("./get_transition.mat")
     map_tran = map_count["transition"]
     map_tran = np.array(map_tran)[0:len_total,:]
     # RobustScaler normalization
-    robust_tran = preprocessing.MinMaxScaler()
-    map_tran = robust_tran.fit_transform(map_tran)
+    norm_tran = preprocessing.MinMaxScaler()
+    map_tran = norm_tran.fit_transform(map_tran)
 
     map_tran = map_tran.reshape((len_total,node,node))
     all_tran = map_tran[number_of_skip_hours:len_total]
@@ -90,8 +87,5 @@ def lzq_load_data(len_test,len_close,len_period,len_trend,T_closeness=1,T_period
         input_gat_train.append(all_tran[:-len_test])
         input_gat_test.append(all_tran[-len_test:])
 
-    #print(input_gcn_train[0].shape,input_gcn_train[1].shape,input_gcn_train[2].shape)  #1815*94*!
-    #print(input_gat_train[0].shape,input_gat_train[1].shape,input_gat_train[2].shape,)  #1815*94*94
-    #print(Y_train.shape,Y_tran_train.shape)    #1815*188,  2592*94*94
 
     return input_gcn_train, input_gcn_test, input_gat_train,input_gat_test, Y_train, Y_test,Y_tran_train, Y_tran_test

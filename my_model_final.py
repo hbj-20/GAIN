@@ -36,7 +36,7 @@ F = 36                             # Original feature dimension
 n_classes = 36                    # Number of classes
 F_ = 36                         # Output size of first GraphAttention layer
 n_attn_heads = 3              # Number of attention heads in first GAT layer
-dropout_rate = 0            # Dropout rate (between and inside GAT layers)
+dropout_rate = 0.2            # Dropout rate (between and inside GAT layers)
 l2_reg = 5e-6               # Factor for l2 regularization
 learning_rate = 1e-5          # Learning rate for Adam
 epochs = 120            # Number of training epochs
@@ -135,11 +135,6 @@ def output_block(len_block):
         output_close = Concatenate(axis=1)(output_close)
         output_close = recurrent.GRU(units=N * 2, input_shape=(len_block, N * 2), return_sequences=False,activation='relu', recurrent_activation='hard_sigmoid',
                                  kernel_initializer='glorot_uniform', recurrent_dropout=0.1)(output_close)
-        #output_trans_close = Concatenate(axis=1)(output_trans_close)
-        #output_trans_close = Conv1D(filters=1, kernel_size=3, padding='same')(output_trans_close)
-        #output_trans_close = Lambda(squeeze)(output_trans_close)
-        #output_trans_close = Activation('relu')(output_trans_close)
-        #print(output_trans_close.shape)
         new_outputs = []
         for output in output_trans_close:
             new_outputs.append(iLayer()(output))
@@ -150,10 +145,6 @@ def output_block(len_block):
         output_close = Flatten()(output_close[0])
         output_trans_close = Flatten()(output_trans_close[0])
     output_trans_close = Activation('relu')(output_trans_close)
-    #output_close = Dense(units = N*2)(output_close)
-    #output_trans_close = Dense(units = N*N)(output_trans_close)
-    #output_close = Dropout(dropout_rate)(output_close)
-    #output_close = Activation("relu")(output_close)
     return output_close,output_trans_close
 
 output_close,output_tran_close = output_block(len_closeness)
@@ -211,5 +202,5 @@ pred = model.predict(input_gcn_test+input_gat_test)
 print("done")
 flow = np.array(pred[0])
 tran = np.array(pred[1])
-np.save("D:/hbj/shenzhen/gain/result_100/flow_100.npy",flow)
-np.save("D:/hbj/shenzhen/gain/result_100/trans_100.npy",tran)
+np.save("./flow.npy",flow)
+np.save("./trans.npy",tran)
